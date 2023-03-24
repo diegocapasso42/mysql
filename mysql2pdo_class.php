@@ -8,6 +8,7 @@
  * If no DB resource link is passed, the code will assume the subscript of
  * the last connection.
  * 
+ * 
  * Many parts of the code are in development and before being used, 
  * it is recommended to evaluate the limitations compared to the original 
  * mysql_* version. 
