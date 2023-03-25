@@ -37,44 +37,37 @@
  {
     /**
      * Object instance
-     *
      * @var mysql2pdo
      */
     protected static $_instance;
 
     /**
      * Instances of the Db
-     *
      * Start position @ 1
-     *
      * @array PDO
      */
     protected $_instances = array(array());
     
     /**
      * Db Instances params
-     *
      * @var array
      */
     protected $_params = array();
     
     /**
      * Next offset used by mysql_field_seek
-     *
      * @var int
      */
     protected $_nextOffset = false;
     
     /**
      * Row seek
-     *
      * @var int
      */
     protected $_rowSeek = array();
 
     /**
      * Get singelton instance
-     *
      * @return mysql2pdo
      */
     public static function getInstance()
