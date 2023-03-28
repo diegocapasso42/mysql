@@ -1,16 +1,23 @@
 <?php
 
 /**
- * This file is responsible for converting mysql_* functions 
- * to work with our object without duplicating documentation. 
- * Please refer to the function links for parameter details. 
- * Any custom parameters or changes will be specified. 
- * If the DB resource link is not passed, it will assume subscript 0, 
- * where X is an integer that identify the db connection.
+ * -- mysql2pdo_function_over.php --
+ * This library provides a wrapper for PDO functions for interacting with MySQL databases 
+ * in projects where the deprecated mysql_* function is still in use in a PHP
+ * version that does not declare those functions (>PHP 7.0).
+ * It is intended for developers whose projects still use the deprecated mysql_* functions 
+ * and should not be considered a definitive solution as it does not resolve many of 
+ * the security issues associated with these now-obsolete functions. 
+ * Therefore, it is recommended that users consider updating their code using MySQLi or PDO
  * 
- * @author    Diego Capasso <diego.capasso@protonmail.com>
- * @link      http://www.php.net/manual/en/ref.mysql.php
- */
+ * For more information about each function parameters and return values, see the official
+ * PHP documentation at @link
+ * 
+ * @author      Diego Capasso diego.capasso@protonmail.com
+ * @copyright   GPL license 
+ * @license     http://www.gnu.org/copyleft/gpl.html 
+ * @link        http://www.php.net/manual/en/ref.mysql.php
+*/
 
 require_once(dirname(__FILE__) . DIRECTORY_SEPARATOR . 'mysql2pdo_class.php');
 require_once(dirname(__FILE__) . DIRECTORY_SEPARATOR . 'mysql2pdo_const.php');

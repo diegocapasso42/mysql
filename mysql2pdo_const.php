@@ -1,21 +1,18 @@
 <?php
 
 /**
- * This code defines constants required for using mysql_* functions 
- * with PHP versions greater than 5.5.5. 
- * The constants are defined if they have not been defined previously.
- * These constants enable various options for connecting to the database 
- * using the mysql_* functions.
- * 
- * @author    Diego Capasso <diego.capasso@protonmail.com>
- * @link      http://www.php.net/manual/en/ref.mysql.php
- * 
- * This library is a derivative of the work created by Aziz S. Hussain
- * We would like to extend our thanks and gratitude for releasing the original work under GPL license 
- * and providing us with the opportunity to continue building upon it.
- * @copyright GPL license 
- * @license   http://www.gnu.org/copyleft/gpl.html 
- */
+ * -- mysql2pdo_const.php --
+ * This library defines constants required for using mysql_* functions with PHP versions greater than 7.0. 
+ * If the constants have not been defined previously, they will be defined by this library. 
+ *
+ * This library assumes that the user has a working knowledge of PHP and MySQL, and is aware of the limitations
+ * and security risks associated with using the mysql_* functions. We recommend that users consider switching to
+ * MySQLi or PDO for improved functionality and security.
+ * @author      Diego Capasso diego.capasso@protonmail.com
+ * @copyright   GPL license 
+ * @license     http://www.gnu.org/copyleft/gpl.html 
+ * @link        http://www.php.net/manual/en/ref.mysql.php
+*/
 
 if (!defined('MYSQL_ASSOC')) {
 // MYSQL_CLIENT options

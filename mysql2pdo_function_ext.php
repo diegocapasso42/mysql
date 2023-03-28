@@ -8,9 +8,11 @@
  * If the DB resource link is not passed, it will assume subscript 0, 
  * where X is an integer that identify the db connection.
  * 
- * @author    Diego Capasso <diego.capasso@protonmail.com>
- * @link      http://www.php.net/manual/en/ref.mysql.php
- */
+ * @author      Diego Capasso diego.capasso@protonmail.com
+ * @copyright   GPL license 
+ * @license     http://www.gnu.org/copyleft/gpl.html 
+ * @link        http://www.php.net/manual/en/ref.mysql.php
+*/
 
 require_once(dirname(__FILE__) . DIRECTORY_SEPARATOR . 'mysql2pdo_class.php');
 require_once(dirname(__FILE__) . DIRECTORY_SEPARATOR . 'mysql2pdo_const.php');

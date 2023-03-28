@@ -1,33 +1,31 @@
 <?php
 /**
- * The provided code is a PHP file that is intended to be used
- * if an existing codebase still uses mysql_* functions in a PHP
- * version that does not declare those functions (>PHP 5.5.5). 
- * It contains a note that the DB resource link will be the subscript 
- * of the database connection, ranging from 0 to X (where X is an integer).
- * If no DB resource link is passed, the code will assume the subscript of
- * the last connection.
+ * -- mysql2pdo_function_over.php --
+ * This library provides a wrapper for PDO functions for interacting with MySQL databases 
+ * in projects where the deprecated mysql_* function is still in use in a PHP
+ * version that does not declare those functions (>PHP 7.0).
+ * It is intended for developers whose projects still use the deprecated mysql_* functions 
+ * and should not be considered a definitive solution as it does not resolve many of 
+ * the security issues associated with these now-obsolete functions. 
+ * Therefore, it is recommended that users consider updating their code using MySQLi or PDO
  * 
+ * It contains a note that the DB resource link will be the subscript of the database connection,
+ * ranging from 0 to X (where X is an integer).
+ * If no DB resource link is passed, the code will assume the subscript of the last connection.
  * 
- * Many parts of the code are in development and before being used, 
- * it is recommended to evaluate the limitations compared to the original 
- * mysql_* version. 
+ * Many parts of the code are in development and before being used, it is recommended to evaluate the 
+ * limitations compared to the original mysql_* version. 
  * If you need to implement them, feel free to fork the library.
  * 
- * @author    Diego Capasso <diego.capasso@protonmail.com>
- * @link      http://www.php.net/manual/en/ref.mysql.php
- *
- * This class is a derivative of the work created by Aziz S. Hussain
- * We would like to extend our thanks and gratitude for releasing the original work under GPL license 
- * and providing us with the opportunity to continue building upon it.
- * @copyright GPL license 
- * @license   http://www.gnu.org/copyleft/gpl.html 
- */
+ * @author      Diego Capasso diego.capasso@protonmail.com
+ * @copyright   GPL license 
+ * @license     http://www.gnu.org/copyleft/gpl.html 
+ * @link        http://www.php.net/manual/en/ref.mysql.php
+*/
 
 /**
  * Class mysql2pdo
- * This object will replicate MySQL function
- * http://www.php.net/manual/en/ref.mysql.php
+ * This object will replicate MySQL functions using PDO
  */
 
  require_once(dirname(__FILE__) . DIRECTORY_SEPARATOR . 'mysql2pdo_const.php');
