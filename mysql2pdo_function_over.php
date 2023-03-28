@@ -8,9 +8,6 @@
  * If the DB resource link is not passed, it will assume subscript 0, 
  * where X is an integer that identify the db connection.
  * 
- * 
- * 
- * 
  * @author    Diego Capasso <diego.capasso@protonmail.com>
  * @link      http://www.php.net/manual/en/ref.mysql.php
  */
