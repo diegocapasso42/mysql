@@ -1,6 +1,6 @@
 <?php
 /**
- * -- mysql2pdo_function_over.php --
+ * -- mysql2pdo_class.php --
  * This library provides a wrapper for PDO functions for interacting with MySQL databases 
  * in projects where the deprecated mysql_* function is still in use in a PHP
  * version that does not declare those functions (>PHP 7.0).
@@ -16,6 +16,17 @@
  * Many parts of the code are in development and before being used, it is recommended to evaluate the 
  * limitations compared to the original mysql_* version. 
  * If you need to implement them, feel free to fork the library.
+ * 
+ * To not duplicate documentation of the original functions, the documentation of the original functions
+ * is available on the link over the class metods related.
+ * 
+ * IMPROVMENT:
+ * There a few differences between the original mysql_* functions and the wrapper:
+ * - mysql_connect create new connection only if it does not exist
+ * - mysql_connect return the subscript of the connection
+ * - mysql_connect accept a new parameter $usePosition to force the subscript of the connection
+ * - mysql_add_existing_connection add an existing connection to the wrapper
+ * - mysql_add_existing_connection return the subscript of the connection
  * 
  * @author      Diego Capasso diego.capasso@protonmail.com
  * @copyright   GPL license 
@@ -36,18 +47,36 @@
     /**
      * Object instance
      * @var mysql2pdo
+     * 
+     * Upon creating a connection, there is no need to generate a new instance since all functions of the wrapper always 
+     * invoke getInstance, which is responsible for creating a class instance if one does not exist, or calling the 
+     * already existing instance.
      */
     protected static $_instance;
 
     /**
-     * Instances of the Db
+     * Instances of the Db connection using PDO
+     * Automatically updated by mysql_connect and mysql_add_existing_connection
      * Start position @ 1
      * @array PDO
      */
     protected $_instances = array(array());
     
     /**
-     * Db Instances params
+     * Db Instances params each connection have a set of parames
+     * 
+     * There are some of the possible params that can be used:
+     * - databaseName
+     * - server
+     * - username
+     * - password
+     * - newLink
+     * - clientFlags
+     * - errno
+     * - error
+     * - rowCount
+     * - lastQuery
+     * 
      * @var array
      */
     protected $_params = array();
@@ -65,7 +94,10 @@
     protected $_rowSeek = array();
 
     /**
-     * Get singelton instance
+     * Return the current instance of the object or create a new one
+     * 
+     * This is a singleton pattern avoid to create multiple instances of the object
+     * and have db connection duplicated in memory
      * @return mysql2pdo
      */
     public static function getInstance()
@@ -77,11 +109,9 @@
     }
 
      /**
+      * IMPROVEMENT: mysql_add_existing_connection
       * Load an existing connection you have into the object
-      *
-      * @author Matthew Baggett
-      * @email  matthew@baggett.me
-      *
+      * (this is not a standard mysql_* function but can be useful for some cases)
       * @param PDO $dbh
       * @return int
       */
@@ -109,13 +139,22 @@
 
     /**
      * mysql_connect
+     * 
+     * Open a connection to a MySQL Server only if it does not exist
+     * (this is not a standard mysql_connect but is a useful improvement)
+     * 
+     * If the connection is successful, the function returns a resource link to the database.
+     * If the connection fails, the function returns false.
+     * 
      * http://www.php.net/manual/en/function.mysql-connect.php
      */
     public function mysql_connect($server, $username, $password, $newLink = false, $clientFlags = false, $usePosition = false)
     {
         // If we aren't forcing a new link and connection exist, use it
         if ($newLink == false && count($this->_instances) > 1) {
+            // Search for existing connection with same params
             foreach ($this->_params as $position => $params) {
+                // if connection exist, return position
                 if ($params['server'] == $server &&
                     $params['username'] == $username &&
                     $params['clientFlags'] == $clientFlags) {
@@ -123,7 +162,7 @@
                 }
             }
         }
-        
+        // Translate flags
         $flags = $this->_translateFlags($clientFlags);
         
         // Set connection element
@@ -163,17 +202,23 @@
     
     /**
      * mysql_pconnect
+     * Open a persistent connection to a MySQL Server
      * http://www.php.net/manual/en/function.mysql-pconnect.php
      */
     public function mysql_pconnect($server, $username, $password, $newLink = false, $clientFlags = false)
     {
+        // Set persistent flag
         $persistent = PDO::ATTR_PERSISTENT;
+        // Merge flags
         $clientFlags = ($clientFlags !== false) ? array_merge($clientFlags, $persistent) : $persistent;
+        // Call mysql_connect
         return $this->mysql_connect($server, $username, $password, $newLink, $clientFlags);
     }
     
     /**
      * mysql_select_db
+     * Select a MySQL database to use with the connection specified by the link identifier
+     * 
      * http://www.php.net/manual/en/function.mysql-select-db.php
      */
     public function mysql_select_db($databaseName, $link = false)
@@ -193,12 +238,15 @@
     
     /**
      * mysql_query
+     * Send a MySQL query and return the result resource or true/false
+     * 
      * http://www.php.net/manual/en/function.mysql-query.php
      */
     public function mysql_query($query, $link = false, $buffered = true)
     {
+        // Use the last link if not specified
         $link = $this->_getLastLink($link);
-
+        // Set buffered query
         try {
             if ($res = $this->_instances[$link]->query($query)) {
                 $this->_params[$link]['rowCount'] = $res->rowCount();
@@ -207,29 +255,36 @@
                 if (!$buffered) {
                     $this->_instances[$link]->setAttribute(PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, true);
                 }
+                // Return result resource or true on success
                 return $res;
             }
+        // Set query error
         } catch (PDOException $e) {
             $this->_loadError($link, $e);
         }
-
+        // Set query error
         $this->_params[$link]['rowCount'] = -1;
         $this->_params[$link]['lastQuery'] = false;
-
-        // Set query error
         $errorCode = $this->_instances[$link]->errorInfo();
         $this->_params[$link]['errno'] = $errorCode[1];
         $this->_params[$link]['error'] = $errorCode[2];
-
+        // If unbuffered, set buffered query
         if (!$buffered) {
             $this->_instances[$link]->setAttribute(PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, true);
         }
-
+        // Return false on error
         return false;
     }
     
     /**
      * mysql_unbuffered_query
+     * Send a MySQL query and return the result resource or true/false
+     * 
+     * The difference between mysql_query() and mysql_unbuffered_query() is that
+     * mysql_query() caches all data into memory before returning the result
+     * set, whereas mysql_unbuffered_query() streams the data from the server
+     * as it is being retrieved.
+     * 
      * http://www.php.net/manual/en/function.mysql-unbuffered-query.php
      */
     public function mysql_unbuffered_query($query, $link = false)
@@ -242,6 +297,8 @@
 
     /**
      * mysql_fetch_array
+     * Fetch a result row as an associative array, a numeric array, or both 
+     *
      * http://www.php.net/manual/en/function.mysql-fetch-array.php
      */
     public function mysql_fetch_array(&$result, $resultType = 3, $doCounts = false, $elementId = false)
@@ -307,6 +364,8 @@
     
     /**
      * mysql_fetch_assoc
+     * Fetch a result row as an associative array 
+     * 
      * http://www.php.net/manual/en/function.mysql-fetch-assoc.php
      */
     public function mysql_fetch_assoc(&$result)
@@ -316,6 +375,8 @@
     
     /**
      * mysql_fetch_row
+     * Fetch a result row as an numeric array
+     * 
      * http://www.php.net/manual/en/function.mysql-fetch-row.php
      */
     public function mysql_fetch_row(&$result)
@@ -325,6 +386,8 @@
     
     /**
      * mysql_fetch_object
+     * Fetch a result row as an object 
+     * 
      * http://www.php.net/manual/en/function.mysql-fetch-object.php
      */
     public function mysql_fetch_object(&$result)
@@ -334,6 +397,8 @@
     
     /**
      * mysql_num_fields
+     * return the number of fields in a result set
+     * 
      * http://www.php.net/manual/en/function.mysql-num-fields.php
      */
     public function mysql_num_fields($result)
@@ -348,6 +413,8 @@
     
     /**
      * mysql_num_rows
+     * return the number of rows in a result set
+     * 
      * http://www.php.net/manual/en/function.mysql-num-rows.php
      */
     public function mysql_num_rows($result)
@@ -365,6 +432,8 @@
 
     /**
      * mysql_ping
+     * Execute a ping on the server
+     * 
      * http://www.php.net/manual/en/function.mysql-ping.php
      */
     public function mysql_ping($link = false)
@@ -405,6 +474,8 @@
     
     /**
      * mysql_affected_rows
+     * return the number of affected rows
+     * 
      * http://www.php.net/manual/en/function.mysql-affected-rows.php
      */
     public function mysql_affected_rows($link = false)
@@ -416,6 +487,8 @@
 
     /**
      * mysql_client_encoding
+     * return the character set name for the current connection
+     * 
      * http://www.php.net/manual/en/function.mysql-client-encoding.php
      */
     public function mysql_client_encoding($link = false)
@@ -429,6 +502,8 @@
     
     /**
      * mysql_close
+     * close a connection to a mysql server specified by link identifier or last link
+     * 
      * http://www.php.net/manual/en/function.mysql-close.php
      */
     public function mysql_close($link = false)
@@ -446,6 +521,7 @@
     
     /**
      * mysql_create_db
+     * 
      * http://www.php.net/manual/en/function.mysql-create-db.php
      */
     public function mysql_create_db($databaseName, $link = false)
